@@ -181,7 +181,7 @@
             mouse = new THREE.Vector2();
 
             const skyboxGeometry = new THREE.SphereGeometry(5000, 64, 64);
-            const skyboxTexture = textureLoader.load('textures/8k_stars_milky_way.jpg');
+            const skyboxTexture = textureLoader.load('/Spaceman/8k_stars_milky_way.jpg');
             const skyboxMaterial = new THREE.MeshBasicMaterial({ map: skyboxTexture, side: THREE.BackSide });
             const skybox = new THREE.Mesh(skyboxGeometry, skyboxMaterial);
             scene.add(skybox);
@@ -505,6 +505,7 @@
     </script>
 </body>
 </html>
+
 
 
 
