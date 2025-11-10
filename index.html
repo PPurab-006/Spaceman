@@ -15,25 +15,38 @@
             margin: 0;
             padding: 0;
         }
-        canvas { cursor: pointer; }
+        canvas { 
+            cursor: pointer; 
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        /* --- Control Panel (Mobile First) --- */
         #controls-panel {
             position: absolute;
-            top: 20px;
-            left: 20px;
+            top: 1rem;
+            left: 1rem;
+            right: 1rem;
             background: rgba(0, 0, 0, 0.6);
             padding: 1rem;
             border-radius: 0.5rem;
             border: 1px solid rgba(255, 255, 255, 0.2);
-            width: 300px;
             backdrop-filter: blur(10px);
             -webkit-backdrop-filter: blur(10px);
+            max-height: 40vh; /* Limit height on mobile */
+            overflow-y: auto;
+            z-index: 10;
         }
+
+        /* --- Facts Panel (Mobile First) --- */
         #facts-panel {
             position: absolute;
-            top: 20px;
-            right: -400px; /* Start off-screen */
-            width: 350px;
-            max-height: calc(100vh - 40px);
+            bottom: 1rem;
+            left: 1rem;
+            right: 1rem;
+            width: auto; /* Auto width on mobile */
+            max-height: 35vh; /* Limit height on mobile */
             overflow-y: auto;
             background: rgba(0, 0, 0, 0.7);
             padding: 1.5rem;
@@ -41,12 +54,49 @@
             border: 1px solid rgba(255, 255, 255, 0.2);
             backdrop-filter: blur(10px);
             -webkit-backdrop-filter: blur(10px);
-            transition: right 0.5s ease-in-out;
+            transition: opacity 0.5s ease-in-out, transform 0.5s ease-in-out;
             color: #e5e7eb;
+            z-index: 10;
+            /* Start hidden */
+            opacity: 0;
+            transform: translateY(20px);
+            pointer-events: none;
         }
+
         #facts-panel.visible {
-            right: 20px;
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: auto;
         }
+
+        /* --- Desktop Layout (sm: and up) --- */
+        @media (min-width: 640px) {
+            #controls-panel {
+                top: 1.25rem;
+                left: 1.25rem;
+                right: auto;
+                width: 300px;
+                max-height: calc(100vh - 40px);
+            }
+            #facts-panel {
+                top: 1.25rem;
+                right: -400px; /* Start off-screen */
+                bottom: auto;
+                left: auto;
+                width: 350px;
+                max-height: calc(100vh - 40px);
+                /* Re-enable horizontal transition for desktop */
+                transition: right 0.5s ease-in-out, opacity 0s, transform 0s;
+                opacity: 1; /* Reset mobile opacity */
+                transform: none; /* Reset mobile transform */
+                pointer-events: auto; /* Reset mobile pointer-events */
+            }
+            #facts-panel.visible {
+                right: 1.25rem;
+            }
+        }
+
+
         #facts-panel h2 {
             font-size: 1.75rem;
             font-weight: bold;
@@ -72,8 +122,24 @@
             white-space: nowrap;
         }
         .date-picker-container input::-webkit-calendar-picker-indicator { filter: invert(1); cursor: pointer; }
-        .slider-thumb::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 16px; height: 16px; background: #3b82f6; cursor: pointer; border-radius: 50%; }
-        .slider-thumb::-moz-range-thumb { width: 16px; height: 16px; background: #3b82f6; cursor: pointer; border-radius: 50%; }
+
+        .speed-btn {
+            flex-grow: 1;
+            background-color: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 0.375rem; /* 6px */
+            padding: 0.25rem 0.5rem;
+            font-size: 0.875rem;
+            transition: background-color 0.2s, color 0.2s;
+        }
+        .speed-btn:hover { background-color: rgba(255, 255, 255, 0.2); }
+        .speed-btn.active {
+            background-color: #3b82f6; /* blue-600 */
+            color: white;
+            border-color: #3b82f6;
+            font-weight: 500;
+        }
+
         .toggle-switch { -webkit-appearance: none; appearance: none; width: 40px; height: 22px; background-color: rgba(255, 255, 255, 0.2); border-radius: 9999px; position: relative; cursor: pointer; transition: background-color 0.3s; }
         .toggle-switch::before { content: ''; position: absolute; width: 18px; height: 18px; background-color: white; border-radius: 50%; top: 2px; left: 2px; transition: transform 0.3s; }
         .toggle-switch:checked { background-color: #3b82f6; }
@@ -91,13 +157,15 @@
             <input type="date" id="currentDate" class="mt-1 block w-full bg-gray-800 border border-gray-600 rounded-md p-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
         </div>
         <div>
-            <label for="speedSlider" class="font-medium">Simulation Speed: <span id="speedValue">10x</span></label>
-            <input id="speedSlider" type="range" min="0" max="1000" value="10" class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer slider-thumb mt-1">
+            <label class="font-medium">Simulation Speed (Days per sec)</label>
+            <div id="speed-buttons" class="mt-1.5 flex gap-2">
+                <!-- Updated data-speed values to be much slower -->
+                <button data-speed="1" class="speed-btn active">1x</button>
+                <button data-speed="2" class="speed-btn">2x</button>
+                <button data-speed="5" class="speed-btn">5x</button>
+            </div>
         </div>
-        <div>
-            <label for="brightnessSlider" class="font-medium">Sun Brightness: <span id="brightnessValue">100%</span></label>
-            <input id="brightnessSlider" type="range" min="20000" max="300000" value="150000" class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer slider-thumb mt-1">
-        </div>
+
         <div class="flex items-center justify-between">
             <label for="toggleOrbits" class="font-medium">Show Orbits</label>
             <input type="checkbox" id="toggleOrbits" class="toggle-switch" checked>
@@ -107,6 +175,8 @@
             <input type="checkbox" id="toggleLabels" class="toggle-switch" checked>
         </div>
         <button id="backButton" class="back-button" style="display: none;">Back to Solar System</button>
+
+        <!-- Planet List (dynamically added) -->
     </div>
 
     <div id="facts-panel">
@@ -134,30 +204,37 @@
         let scene, camera, renderer, labelRenderer, controls, raycaster, mouse, composer, pointLight;
         let clock = new THREE.Clock();
         let simulationDate = new Date();
-        let simulationSpeed = 10; // Days per second
+        let simulationSpeed = 1; // Default speed (1 day per second)
         const textureLoader = new THREE.TextureLoader();
         const celestialObjects = [];
         const orbitLines = new THREE.Group();
         let focusedObject = null;
         const DEG2RAD = Math.PI / 180;
+        
+        // Store original camera position for reset
+        const originalCameraPosition = new THREE.Vector3(0, 150, 450);
+        const defaultTargetVec = new THREE.Vector3(0, 0, 0);
+        let targetPositionVec = new THREE.Vector3(); // Re-usable vector
+        let isTransitioningCamera = false; // State flag for camera movement
 
         const planetData = {
-            sun: { name: 'Sun', radius: 20, isStar: true, textureUrl: '/Spaceman/2k_sun.jpg', funFacts: { type: 'G-type main-sequence star', mass: '1.989 × 10^30 kg', temp: '5,778 K (surface)', gravity: '274 m/s²', atmosphere: 'Hydrogen, Helium', facts: 'The Sun contains 99.86% of the total mass of the Solar System. It fuses about 600 million tons of hydrogen into helium every second.'} },
-            mercury: { name: 'Mercury', radius: 0.38, textureUrl: '/Spaceman/2k_mercury.jpg', axialTilt: 0.03, semiMajorAxis: 0.387, eccentricity: 0.206, orbitalPeriod: 88, funFacts: { type: 'Terrestrial Planet', mass: '3.285 × 10^23 kg', temp: '-173 to 427 °C', gravity: '3.7 m/s²', atmosphere: 'Thin, exosphere', facts: 'A year on Mercury is just 88 Earth days long. It has the most eccentric orbit of any planet in the Solar System.'} },
-            venus: { name: 'Venus', radius: 0.95, textureUrl: '/Spaceman/2k_venus_surface.jpg', axialTilt: 177.4, semiMajorAxis: 0.723, eccentricity: 0.007, orbitalPeriod: 225, funFacts: { type: 'Terrestrial Planet', mass: '4.867 × 10^24 kg', temp: '462 °C (average)', gravity: '8.87 m/s²', atmosphere: 'Thick, Carbon Dioxide', facts: 'Venus rotates backwards compared to other planets. Its surface is hot enough to melt lead due to a runaway greenhouse effect.'} },
-            earth: { name: 'Earth', radius: 1, textureUrl: '/Spaceman/2k_earth_daymap.jpg', axialTilt: 23.4, semiMajorAxis: 1, eccentricity: 0.017, orbitalPeriod: 365.25, moon: { name: 'Moon', radius: 0.27, textureUrl: '/Spaceman/2k_moon.jpg', semiMajorAxis: 0.00257, eccentricity: 0.055, orbitalPeriod: 27.3, funFacts: { type: 'Natural Satellite', mass: '7.342 × 10^22 kg', temp: '-233 to 123 °C', gravity: '1.62 m/s²', atmosphere: 'Very thin exosphere', facts: 'The Moon is Earth\'s only natural satellite and was formed 4.6 billion years ago. It is in synchronous rotation with Earth, always showing the same face.'} }, funFacts: { type: 'Terrestrial Planet', mass: '5.972 × 10^24 kg', temp: '-88 to 58 °C', gravity: '9.807 m/s²', atmosphere: 'Nitrogen, Oxygen', facts: 'Earth is the only known planet to harbor life. Its powerful magnetic field protects it from harmful solar winds.'} },
-            mars: { name: 'Mars', radius: 0.53, textureUrl: '/Spaceman/2k_mars.jpg', axialTilt: 25.2, semiMajorAxis: 1.52, eccentricity: 0.094, orbitalPeriod: 687, funFacts: { type: 'Terrestrial Planet', mass: '6.39 × 10^23 kg', temp: '-87 to -5 °C', gravity: '3.72 m/s²', atmosphere: 'Thin, Carbon Dioxide', facts: 'Mars is home to Olympus Mons, the largest volcano in the solar system. It has two small moons, Phobos and Deimos.'} },
-            jupiter: { name: 'Jupiter', radius: 11.2, textureUrl: '/Spaceman/2k_jupiter.jpg', axialTilt: 3.1, semiMajorAxis: 5.20, eccentricity: 0.049, orbitalPeriod: 4331, funFacts: { type: 'Gas Giant', mass: '1.898 × 10^27 kg', temp: '-145 °C (cloud tops)', gravity: '24.79 m/s²', atmosphere: 'Hydrogen, Helium', facts: 'Jupiter is more than twice as massive as all the other planets combined. Its Great Red Spot is a giant storm that has raged for centuries.'} },
-            saturn: { name: 'Saturn', radius: 9.45, textureUrl: '/Spaceman/2k_saturn.jpg', axialTilt: 26.7, semiMajorAxis: 9.58, eccentricity: 0.052, orbitalPeriod: 10747, ring: { innerRadius: 10.5, outerRadius: 20, textureUrl: '/Spaceman/2k_saturn_ring_alpha.png' }, funFacts: { type: 'Gas Giant', mass: '5.683 × 10^26 kg', temp: '-178 °C (cloud tops)', gravity: '10.44 m/s²', atmosphere: 'Hydrogen, Helium', facts: 'Saturn\'s rings are made of billions of particles of ice and rock. The planet is less dense than water; it would float in a large enough bathtub.'} },
-            uranus: { name: 'Uranus', radius: 4.0, textureUrl: '/Spaceman/2k_uranus.jpg', axialTilt: 97.8, semiMajorAxis: 19.20, eccentricity: 0.047, orbitalPeriod: 30589, funFacts: { type: 'Ice Giant', mass: '8.681 × 10^25 kg', temp: '-224 °C (cloud tops)', gravity: '8.69 m/s²', atmosphere: 'Hydrogen, Helium, Methane', facts: 'Uranus is tilted on its side, with an axial tilt of 98 degrees. Methane in its atmosphere gives it a blue-green color.'} },
-            neptune: { name: 'Neptune', radius: 3.88, textureUrl: '/Spaceman/2k_neptune.jpg', axialTilt: 28.3, semiMajorAxis: 30.05, eccentricity: 0.010, orbitalPeriod: 59800, funFacts: { type: 'Ice Giant', mass: '1.024 × 10^26 kg', temp: '-214 °C (cloud tops)', gravity: '11.15 m/s²', atmosphere: 'Hydrogen, Helium, Methane', facts: 'Neptune has the fastest winds in the Solar System, reaching up to 2,100 km/h. It was the first planet located through mathematical prediction.'} }
+            sun: { name: 'Sun', radius: 20, isStar: true, textureUrl: 'https://placehold.co/2048x1024/FDB813/000000?text=Sun', funFacts: { type: 'G-type main-sequence star', mass: '1.989 × 10^30 kg', temp: '5,778 K (surface)', gravity: '274 m/s²', atmosphere: 'Hydrogen, Helium', facts: 'The Sun contains 99.86% of the total mass of the Solar System. It fuses about 600 million tons of hydrogen into helium every second.'} },
+            mercury: { name: 'Mercury', radius: 0.38, textureUrl: 'https://placehold.co/2048x1024/999999/000000?text=Mercury', axialTilt: 0.03, semiMajorAxis: 0.387, eccentricity: 0.206, orbitalPeriod: 88, funFacts: { type: 'Terrestrial Planet', mass: '3.285 × 10^23 kg', temp: '-173 to 427 °C', gravity: '3.7 m/s²', atmosphere: 'Thin, exosphere', facts: 'A year on Mercury is just 88 Earth days long. It has the most eccentric orbit of any planet in the Solar System.'} },
+            venus: { name: 'Venus', radius: 0.95, textureUrl: 'https://placehold.co/2048x1024/E6B850/000000?text=Venus', axialTilt: 177.4, semiMajorAxis: 0.723, eccentricity: 0.007, orbitalPeriod: 225, funFacts: { type: 'Terrestrial Planet', mass: '4.867 × 10^24 kg', temp: '462 °C (average)', gravity: '8.87 m/s²', atmosphere: 'Thick, Carbon Dioxide', facts: 'Venus rotates backwards compared to other planets. Its surface is hot enough to melt lead due to a runaway greenhouse effect.'} },
+            earth: { name: 'Earth', radius: 1, textureUrl: 'https://placehold.co/2048x1024/4B89DA/FFFFFF?text=Earth', axialTilt: 23.4, semiMajorAxis: 1, eccentricity: 0.017, orbitalPeriod: 365.25, moon: { name: 'Moon', radius: 0.27, textureUrl: 'https://placehold.co/2048x1024/B0B0B0/000000?text=Moon', semiMajorAxis: 0.00257, eccentricity: 0.055, orbitalPeriod: 27.3, funFacts: { type: 'Natural Satellite', mass: '7.342 × 10^22 kg', temp: '-233 to 123 °C', gravity: '1.62 m/s²', atmosphere: 'Very thin exosphere', facts: 'The Moon is Earth\'s only natural satellite and was formed 4.6 billion years ago. It is in synchronous rotation with Earth, always showing the same face.'} }, funFacts: { type: 'Terrestrial Planet', mass: '5.972 × 10^24 kg', temp: '-88 to 58 °C', gravity: '9.807 m/s²', atmosphere: 'Nitrogen, Oxygen', facts: 'Earth is the only known planet to harbor life. Its powerful magnetic field protects it from harmful solar winds.'} },
+            mars: { name: 'Mars', radius: 0.53, textureUrl: 'https://placehold.co/2048x1024/C1440E/000000?text=Mars', axialTilt: 25.2, semiMajorAxis: 1.52, eccentricity: 0.094, orbitalPeriod: 687, funFacts: { type: 'Terrestrial Planet', mass: '6.39 × 10^23 kg', temp: '-87 to -5 °C', gravity: '3.72 m/s²', atmosphere: 'Thin, Carbon Dioxide', facts: 'Mars is home to Olympus Mons, the largest volcano in the solar system. It has two small moons, Phobos and Deimos.'} },
+            jupiter: { name: 'Jupiter', radius: 11.2, textureUrl: 'https://placehold.co/2048x1024/D8B088/000000?text=Jupiter', axialTilt: 3.1, semiMajorAxis: 5.20, eccentricity: 0.049, orbitalPeriod: 4331, funFacts: { type: 'Gas Giant', mass: '1.898 × 10^27 kg', temp: '-145 °C (cloud tops)', gravity: '24.79 m/s²', atmosphere: 'Hydrogen, Helium', facts: 'Jupiter is more than twice as massive as all the other planets combined. Its Great Red Spot is a giant storm that has raged for centuries.'} },
+            saturn: { name: 'Saturn', radius: 9.45, textureUrl: 'https://placehold.co/2048x1024/E3DCC1/000000?text=Saturn', axialTilt: 26.7, semiMajorAxis: 9.58, eccentricity: 0.052, orbitalPeriod: 10747, ring: { innerRadius: 10.5, outerRadius: 20 }, funFacts: { type: 'Gas Giant', mass: '5.683 × 10^26 kg', temp: '-178 °C (cloud tops)', gravity: '10.44 m/s²', atmosphere: 'Hydrogen, Helium', facts: 'Saturn\'s rings are made of billions of particles of ice and rock. The planet is less dense than water; it would float in a large enough bathtub.'} },
+            uranus: { name: 'Uranus', radius: 4.0, textureUrl: 'https://placehold.co/2048x1024/AFDBF5/000000?text=Uranus', axialTilt: 97.8, semiMajorAxis: 19.20, eccentricity: 0.047, orbitalPeriod: 30589, funFacts: { type: 'Ice Giant', mass: '8.681 × 10^25 kg', temp: '-224 °C (cloud tops)', gravity: '8.69 m/s²', atmosphere: 'Hydrogen, Helium, Methane', facts: 'Uranus is tilted on its side, with an axial tilt of 98 degrees. Methane in its atmosphere gives it a blue-green color.'} },
+            neptune: { name: 'Neptune', radius: 3.88, textureUrl: 'https://placehold.co/2048x1024/3E54E1/FFFFFF?text=Neptune', axialTilt: 28.3, semiMajorAxis: 30.05, eccentricity: 0.010, orbitalPeriod: 59800, funFacts: { type: 'Ice Giant', mass: '1.024 × 10^26 kg', temp: '-214 °C (cloud tops)', gravity: '11.15 m/s²', atmosphere: 'Hydrogen, Helium, Methane', facts: 'Neptune has the fastest winds in the Solar System, reaching up to 2,100 km/h. It was the first planet located through mathematical prediction.'} }
         };
         const AU = 149.6;
 
         function init() {
             scene = new THREE.Scene();
-            camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 10000);
-            camera.position.set(0, 150, 450);
+            camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 100000);
+            camera.position.copy(originalCameraPosition);
+            
             renderer = new THREE.WebGLRenderer({ antialias: true });
             renderer.setSize(window.innerWidth, window.innerHeight);
             renderer.toneMapping = THREE.ACESFilmicToneMapping;
@@ -172,7 +249,8 @@
             
             controls = new OrbitControls(camera, renderer.domElement);
             controls.enableDamping = true;
-            controls.maxDistance = 2000;
+            controls.dampingFactor = 0.05; // Smoother camera
+            controls.maxDistance = 60000; // Allow much more zoom out
             
             const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
             scene.add(ambientLight);
@@ -180,26 +258,29 @@
             raycaster = new THREE.Raycaster();
             mouse = new THREE.Vector2();
 
-            const skyboxGeometry = new THREE.SphereGeometry(5000, 64, 64);
-            const skyboxTexture = textureLoader.load('/Spaceman/8k_stars_milky_way.jpg');
+            const skyboxGeometry = new THREE.SphereGeometry(50000, 64, 64);
+            const skyboxTexture = textureLoader.load('https://placehold.co/8192x4096/000000/FFFFFF?text=Stars');
             const skyboxMaterial = new THREE.MeshBasicMaterial({ map: skyboxTexture, side: THREE.BackSide });
             const skybox = new THREE.Mesh(skyboxGeometry, skyboxMaterial);
             scene.add(skybox);
 
             createSolarSystem();
             createAsteroidBelt(1.8 * AU, 3.2 * AU, 20000, 0.1);
-            createAsteroidBelt(30 * AU, 50 * AU, 5000, 0.2);
+            createAsteroidBelt(30 * AU, 50 * AU, 5000, 0.2); // Kuiper Belt
 
             scene.add(orbitLines);
             setupUI();
 
+            // Setup Post-processing (Bloom)
             composer = new EffectComposer(renderer);
             const renderPass = new RenderPass(scene, camera);
             composer.addPass(renderPass);
             const bloomPass = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 1.5, 0.4, 0.85);
-            bloomPass.threshold = 0.85; 
-            bloomPass.strength = 1.2;
-            bloomPass.radius = 0.3;
+            
+            // Adjusted bloom settings
+            bloomPass.threshold = 0.9;
+            bloomPass.strength = 0.8;
+            bloomPass.radius = 0.5;
             composer.addPass(bloomPass);
             
             window.addEventListener('resize', onWindowResize, false);
@@ -210,14 +291,18 @@
         function createCelestialObject(data) {
             const geometry = new THREE.SphereGeometry(data.radius, 64, 64);
             const texture = textureLoader.load(data.textureUrl);
+            texture.colorSpace = THREE.SRGBColorSpace;
+            
             let material;
             if (data.isStar) {
                 material = new THREE.MeshBasicMaterial({ map: texture });
-                pointLight = new THREE.PointLight(0xffffff, 150000, 10000);
+                // Set light to the fixed "lowest" brightness from the original slider
+                pointLight = new THREE.PointLight(0xffffff, 20000, 10000);
                 scene.add(pointLight);
 
-                const textureFlare0 = textureLoader.load('textures/lensflare/lensflare0.png');
-                const textureFlare3 = textureLoader.load('textures/lensflare/lensflare3.png');
+                const textureFlare0 = textureLoader.load('https://placehold.co/512x512/FFFFFF/000000?text=Flare+0&transparent=1');
+                const textureFlare3 = textureLoader.load('https://placehold.co/512x512/FFFFFF/000000?text=Flare+3&transparent=1');
+                
                 const lensflare = new Lensflare();
                 lensflare.addElement(new LensflareElement(textureFlare0, 700, 0, pointLight.color));
                 lensflare.addElement(new LensflareElement(textureFlare3, 60, 0.6));
@@ -258,13 +343,14 @@
                 orbitLines.add(orbitLine);
             }
 
+            // --- NEW RING LOGIC ---
             if (data.ring) {
-                const ringTexture = textureLoader.load(data.ring.textureUrl);
-                const ringGeometry = new THREE.RingGeometry(data.ring.innerRadius, data.ring.outerRadius, 64);
-                const ringMaterial = new THREE.MeshBasicMaterial({ map: ringTexture, side: THREE.DoubleSide, transparent: true });
-                const ringMesh = new THREE.Mesh(ringGeometry, ringMaterial);
-                ringMesh.rotation.x = Math.PI / 2;
-                mesh.add(ringMesh);
+                // Create a particle-based ring instead of a textured plane
+                const ringParticles = createRingParticles(data.ring.innerRadius, data.ring.outerRadius, 20000, 0.1);
+                // The particles are generated in the X-Z plane (relative to the planet).
+                // The planet mesh 'mesh' is already tilted on its X-axis.
+                // We add the rings as a child, so they automatically tilt with the planet.
+                mesh.add(ringParticles);
             }
 
             if (data.moon) {
@@ -272,6 +358,7 @@
                 const moonScale = 15;
                 const moonGeometry = new THREE.SphereGeometry(moonData.radius, 32, 32);
                 const moonTexture = textureLoader.load(moonData.textureUrl);
+                moonTexture.colorSpace = THREE.SRGBColorSpace;
                 const moonMaterial = new THREE.MeshStandardMaterial({ map: moonTexture, roughness: 0.8 });
                 const moonMesh = new THREE.Mesh(moonGeometry, moonMaterial);
 
@@ -301,6 +388,10 @@
                 mesh.add(moonOrbitLine);
             }
         }
+
+        function createSolarSystem() {
+            Object.values(planetData).forEach(data => createCelestialObject(data));
+        }
         
         function createAsteroidBelt(innerRadius, outerRadius, count, size) {
             const asteroids = new THREE.BufferGeometry();
@@ -319,8 +410,40 @@
             scene.add(asteroidField);
         }
 
-        function createSolarSystem() {
-            Object.values(planetData).forEach(data => createCelestialObject(data));
+        // --- NEW FUNCTION FOR SATURN'S RINGS ---
+        function createRingParticles(innerRadius, outerRadius, count, particleSize) {
+            const positions = [];
+            const geometry = new THREE.BufferGeometry();
+            const color = new THREE.Color(0xAAAAAA); // Bright color for bloom
+
+            for (let i = 0; i < count; i++) {
+                const angle = Math.random() * Math.PI * 2;
+                const radius = THREE.MathUtils.randFloat(innerRadius, outerRadius);
+                
+                // Slight spread for thickness, but keep it tight
+                const y = THREE.MathUtils.randFloatSpread(0.2); 
+                const x = Math.cos(angle) * radius;
+                const z = Math.sin(angle) * radius;
+                
+                positions.push(x, y, z);
+            }
+
+            geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+            
+            // Material that will glow with bloom pass
+            const material = new THREE.PointsMaterial({
+                color: color,
+                size: particleSize,
+                transparent: true,
+                blending: THREE.AdditiveBlending, // Makes overlapping particles brighter
+                depthWrite: false, // Helps with transparency
+                sizeAttenuation: true
+            });
+
+            const ringParticles = new THREE.Points(geometry, material);
+            // No rotation needed, as it's being added to the already-tilted planet mesh
+            // and the particles are generated in the correct plane (X-Z)
+            return ringParticles;
         }
 
         function setupUI() {
@@ -328,21 +451,17 @@
             dateInput.valueAsDate = simulationDate;
             dateInput.addEventListener('change', () => { simulationDate = dateInput.valueAsDate; });
 
-            document.getElementById('speedSlider').addEventListener('input', e => { 
-                simulationSpeed = Number(e.target.value); 
-                document.getElementById('speedValue').textContent = `${simulationSpeed}x`; 
+            // Speed button logic
+            const speedButtonsContainer = document.getElementById('speed-buttons');
+            speedButtonsContainer.addEventListener('click', e => {
+                const clickedButton = e.target.closest('.speed-btn');
+                if (clickedButton) {
+                    speedButtonsContainer.querySelectorAll('.speed-btn').forEach(btn => btn.classList.remove('active'));
+                    clickedButton.classList.add('active');
+                    simulationSpeed = Number(clickedButton.dataset.speed);
+                }
             });
             
-            const brightnessSlider = document.getElementById('brightnessSlider');
-            const brightnessValue = document.getElementById('brightnessValue');
-            brightnessSlider.addEventListener('input', e => { 
-                const intensity = Number(e.target.value);
-                pointLight.intensity = intensity;
-                const max = Number(brightnessSlider.max);
-                const min = Number(brightnessSlider.min);
-                brightnessValue.textContent = `${Math.round(((intensity - min) / (max - min)) * 100)}%`;
-            });
-
             document.getElementById('toggleOrbits').addEventListener('change', e => { 
                 const isVisible = e.target.checked;
                 orbitLines.visible = isVisible; 
@@ -352,6 +471,7 @@
             document.getElementById('backButton').addEventListener('click', resetCamera);
             document.getElementById('closeFacts').addEventListener('click', resetCamera);
             
+            // Build Planet List
             const planetListContainer = document.createElement('div');
             planetListContainer.className = 'mt-4 pt-4 border-t border-gray-700';
             planetListContainer.innerHTML = `<h2 class="text-base font-semibold mb-2">Celestial Bodies</h2>`;
@@ -366,6 +486,10 @@
                 #planet-list::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.1); border-radius: 3px; }
                 #planet-list::-webkit-scrollbar-thumb { background: #3b82f6; border-radius: 3px; }
                 #planet-list::-webkit-scrollbar-thumb:hover { background: #2563eb; }
+                #controls-panel::-webkit-scrollbar { width: 6px; }
+                #controls-panel::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.1); border-radius: 3px; }
+                #controls-panel::-webkit-scrollbar-thumb { background: #3b82f6; border-radius: 3px; }
+                #controls-panel::-webkit-scrollbar-thumb:hover { background: #2563eb; }
             `;
             document.head.appendChild(scrollbarStyle);
 
@@ -426,6 +550,7 @@
         }
         
         function onMouseClick(event) {
+            // Check if the click is on a UI element
             if (event.target.closest('#controls-panel') || event.target.closest('#facts-panel')) return;
 
             mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
@@ -441,16 +566,23 @@
             focusedObject = object;
             document.getElementById('backButton').style.display = 'block';
             updateFactsPanel(object.userData);
+            isTransitioningCamera = true; // Start the transition
         }
 
         function resetCamera() {
             focusedObject = null;
             document.getElementById('backButton').style.display = 'none';
             document.getElementById('facts-panel').classList.remove('visible');
+            isTransitioningCamera = true; // Start the transition back
         }
 
         function updateFactsPanel(data) {
-            const funFacts = data.funFacts || (data.parentBody && data.parentBody.funFacts);
+            const funFacts = data.funFacts;
+            if (!funFacts) {
+                 document.getElementById('facts-content').innerHTML = `<h2>${data.name}</h2><p>No facts available for this object.</p>`;
+                 document.getElementById('facts-panel').classList.add('visible');
+                 return;
+            }
             const content = `
                 <h2 class="mb-4">${data.name}</h2>
                 <p><strong>Type:</strong> ${funFacts.type}</p>
@@ -476,27 +608,61 @@
             requestAnimationFrame(animate);
 
             const delta = clock.getDelta();
-            const millisecondsToAdvance = delta * simulationSpeed * 24 * 60 * 60 * 1000;
+            // --- UPDATED TIME LOGIC ---
+            // simulationSpeed is now 1, 2, or 5 (days per second)
+            const millisecondsToAdvance = delta * simulationSpeed * (24 * 60 * 60 * 1000); // (days) * (ms in a day)
+            
             simulationDate.setTime(simulationDate.getTime() + millisecondsToAdvance);
             document.getElementById('currentDate').valueAsDate = simulationDate;
 
             updatePositions();
             
             if (focusedObject) {
-                const targetPosition = new THREE.Vector3();
-                focusedObject.getWorldPosition(targetPosition);
+                // --- We are focused on a planet ---
+                focusedObject.getWorldPosition(targetPositionVec);
                 
-                const radius = focusedObject.userData.radius || 1;
-                const cameraOffset = new THREE.Vector3(0, radius * 1.5, radius * 3.5);
-                const desiredCameraPosition = targetPosition.clone().add(cameraOffset);
+                if (isTransitioningCamera) {
+                    // Phase 1: Move camera to the planet
+                    const radius = focusedObject.userData.radius || 1;
+                    // Less intrusive offset
+                    const cameraOffset = new THREE.Vector3(0, radius * 2.5, radius * 5.0);
+                    const desiredCameraPosition = targetPositionVec.clone().add(cameraOffset);
 
-                camera.position.lerp(desiredCameraPosition, 0.05);
-                controls.target.lerp(targetPosition, 0.05);
+                    // Lerp both position and target
+                    camera.position.lerp(desiredCameraPosition, 0.07);
+                    controls.target.lerp(targetPositionVec, 0.07);
+
+                    // Check for transition end (using a slightly larger distance)
+                    if (camera.position.distanceTo(desiredCameraPosition) < 1.0) {
+                        isTransitioningCamera = false; // Transition is over
+                        controls.target.copy(targetPositionVec); // Hard set target
+                    }
+                } else {
+                    // Phase 2: User is in control. Just keep the target centered.
+                    controls.target.lerp(targetPositionVec, 0.1);
+                    // *** DO NOT TOUCH camera.position ***
+                }
+
             } else {
-                 controls.target.lerp(new THREE.Vector3(0,0,0), 0.05);
+                // --- We are in the default solar system view ---
+                if (isTransitioningCamera) {
+                    // Phase 1: Move camera back to default
+                    camera.position.lerp(originalCameraPosition, 0.07);
+                    controls.target.lerp(defaultTargetVec, 0.07);
+
+                    // Check for transition end
+                    if (camera.position.distanceTo(originalCameraPosition) < 1.0) {
+                        isTransitioningCamera = false; // Transition is over
+                        controls.target.copy(defaultTargetVec); // Hard set target
+                    }
+                } else {
+                    // Phase 2: User is in control. Just keep target centered.
+                    controls.target.lerp(defaultTargetVec, 0.1);
+                    // *** DO NOT TOUCH camera.position ***
+                }
             }
 
-            controls.update();
+            controls.update(); // Let OrbitControls handle user input
             composer.render();
             labelRenderer.render(scene, camera);
         }
@@ -505,6 +671,7 @@
     </script>
 </body>
 </html>
+
 
 
 
