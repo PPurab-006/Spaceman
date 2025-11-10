@@ -300,8 +300,6 @@
                 pointLight = new THREE.PointLight(0xffffff, 20000, 10000);
                 scene.add(pointLight);
 
-                const textureFlare0 = textureLoader.load('https://placehold.co/512x512/FFFFFF/000000?text=Flare+0&transparent=1');
-                const textureFlare3 = textureLoader.load('https://placehold.co/512x512/FFFFFF/000000?text=Flare+3&transparent=1');
                 
                 const lensflare = new Lensflare();
                 lensflare.addElement(new LensflareElement(textureFlare0, 700, 0, pointLight.color));
@@ -671,6 +669,7 @@
     </script>
 </body>
 </html>
+
 
 
 
