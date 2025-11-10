@@ -196,7 +196,6 @@
         import * as THREE from 'three';
         import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
         import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js';
-        import { Lensflare, LensflareElement } from 'three/addons/objects/Lensflare.js';
         import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
         import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
         import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
@@ -300,17 +299,7 @@
                 pointLight = new THREE.PointLight(0xffffff, 20000, 10000);
                 scene.add(pointLight);
 
-                const textureFlare0 = textureLoader.load('https://placehold.co/512x512/FFFFFF/000000?text=Flare+0&transparent=1');
-                const textureFlare3 = textureLoader.load('https://placehold.co/512x512/FFFFFF/000000?text=Flare+3&transparent=1');
-
-                
-                const lensflare = new Lensflare();
-                lensflare.addElement(new LensflareElement(textureFlare0, 700, 0, pointLight.color));
-                lensflare.addElement(new LensflareElement(textureFlare3, 60, 0.6));
-                lensflare.addElement(new LensflareElement(textureFlare3, 70, 0.7));
-                lensflare.addElement(new LensflareElement(textureFlare3, 120, 0.9));
-                lensflare.addElement(new LensflareElement(textureFlare3, 70, 1));
-                pointLight.add(lensflare);
+          
 
             } else {
                 material = new THREE.MeshStandardMaterial({ map: texture, roughness: 0.6 });
@@ -672,6 +661,7 @@
     </script>
 </body>
 </html>
+
 
 
 
